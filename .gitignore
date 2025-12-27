@@ -1,0 +1,8 @@
+venv/
+build/
+dist/
+build_deb/
+__pycache__/
+*.spec
+*.lock
+*.db
