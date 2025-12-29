@@ -15,8 +15,8 @@ Para instalar o aplicativo no seu Linux (Debian/Ubuntu/Mint), abra o seu termina
 
 ```bash
 cd ~/Downloads
-sudo dpkg -i dailyreminder_1.0.4_amd64.deb
-sudo apt install -f
+unzip dailyreminder_installer_v7.zip
+sudo apt install ./DailyReminder_1.0.7_amd64.deb
 ```
 
 ## 🛠️ Tecnologias
