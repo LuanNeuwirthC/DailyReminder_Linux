@@ -1,4 +1,4 @@
-name: Build Linux .deb Package (Auto-Install Dependencies)
+name: Build Linux .deb Package (Fixed Dependencies)
 
 on:
   push:
@@ -39,14 +39,15 @@ jobs:
         cp logo.png package/usr/share/pixmaps/dailyreminder.png
 
         echo "Package: dailyreminder" > package/DEBIAN/control
-        echo "Version: 1.0.6" >> package/DEBIAN/control
+        echo "Version: 1.0.7" >> package/DEBIAN/control
         echo "Section: utils" >> package/DEBIAN/control
         echo "Priority: optional" >> package/DEBIAN/control
         echo "Architecture: amd64" >> package/DEBIAN/control
-        echo "Depends: libxcb-cursor0, libxcb-xinerama0, libxcb-shape0, libxcb-xfixesc0, libxkbcommon-x11-0, libglib2.0-0" >> package/DEBIAN/control
+        # LISTA CORRIGIDA E SEGURA ABAIXO
+        echo "Depends: libxcb-cursor0, libxcb-xinerama0, libxkbcommon-x11-0" >> package/DEBIAN/control
         echo "Maintainer: Luan Neuwirth <luan@example.com>" >> package/DEBIAN/control
-        echo "Description: Lembrete Diário Completo" >> package/DEBIAN/control
-        echo " Instala automaticamente dependencias Qt6 e configura permissoes." >> package/DEBIAN/control
+        echo "Description: Lembrete Diário" >> package/DEBIAN/control
+        echo " App de lembrete com dependencias corrigidas." >> package/DEBIAN/control
 
         echo "#!/bin/sh" > package/DEBIAN/postinst
         echo "set -e" >> package/DEBIAN/postinst
@@ -71,10 +72,10 @@ jobs:
         chmod 755 package/opt/DailyReminder/DailyReminder
 
     - name: Build .deb File
-      run: dpkg-deb --build package DailyReminder_1.0.6_amd64.deb
+      run: dpkg-deb --build package DailyReminder_1.0.7_amd64.deb
 
     - name: Upload .deb
       uses: actions/upload-artifact@v4
       with:
-        name: dailyreminder_installer_full
-        path: DailyReminder_1.0.6_amd64.deb
+        name: dailyreminder_installer_v7
+        path: DailyReminder_1.0.7_amd64.deb
