@@ -22,10 +22,6 @@
 <br>
 
 
-![Version](https://img.shields.io/badge/version-1.0.7-blue)
-![Platform](https://img.shields.io/badge/platform-Linux-linux)
-![Status](https://img.shields.io/badge/status-stable-green)
-
 > Ferramenta oficial de lembretes diários para a equipe de Desenvolvimento de Software da **Ztrax**.
 
 O **Daily Reminder** é uma aplicação nativa e leve, desenvolvida para garantir que nenhum registro de daily seja esquecido. Com uma interface moderna em **PyQt6**, ele se integra perfeitamente ao ambiente de trabalho Linux (Gnome/Pop!_OS/Mint), rodando silenciosamente na bandeja do sistema.
