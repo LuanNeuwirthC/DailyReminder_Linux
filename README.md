@@ -1,4 +1,26 @@
-# 🕒 Daily Reminder (Linux Edition)
+<div align="center">
+  <img src="logo.png" alt="Logo Daily Reminder" width="140">
+
+  <h1>Daily Reminder</h1>
+  
+  <p>
+    <b>Versão Linux</b> • Desenvolvido para Ztrax
+  </p>
+
+  <p>
+    <a href="https://github.com/LuanNeuwirthC/DailyReminder_Linux/releases/tag/latest">
+      <img src="https://img.shields.io/badge/Download-Latest_Release-00D2FF?style=for-the-badge&logo=linux&logoColor=black" alt="Download">
+    </a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/status-stable-green?style=flat-square">
+    <img src="https://img.shields.io/badge/versão-1.0.7-blue?style=flat-square">
+  </p>
+</div>
+
+<br>
+
 
 ![Version](https://img.shields.io/badge/version-1.0.7-blue)
 ![Platform](https://img.shields.io/badge/platform-Linux-linux)
