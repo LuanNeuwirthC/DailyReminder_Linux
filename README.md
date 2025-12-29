@@ -12,11 +12,11 @@ O **Daily Reminder** é uma aplicação nativa e leve, desenvolvida para garanti
 
 ##  Funcionalidades Principais
 
-* ** UI Cyberpunk/Neon**: Interface moderna em modo escuro com detalhes em azul neon, projetada para não cansar a vista.
-* ** Agendamento Preciso**: Defina seu horário de daily e o aplicativo cuidará do resto, rodando em segundo plano.
-* ** Auto-Start Integrado**: Opção nativa para iniciar junto com o sistema operacional.
-* ** Modo Tray (Bandeja)**: O app fica minimizado discretamente na barra superior (perto do relógio/WiFi).
-* ** Fluxo Automatizado**:
+* **UI Cyberpunk/Neon**: Interface moderna em modo escuro com detalhes em azul neon, projetada para não cansar a vista.
+* **Agendamento Preciso**: Defina seu horário de daily e o aplicativo cuidará do resto, rodando em segundo plano.
+* **Auto-Start Integrado**: Opção nativa para iniciar junto com o sistema operacional.
+* **Modo Tray (Bandeja)**: O app fica minimizado discretamente na barra superior (perto do relógio/WiFi).
+* **Fluxo Automatizado**:
     1.  O alerta dispara no horário configurado.
     2.  Ao clicar em **"Registrar Daily"**, o navegador abre automaticamente em [rifyt.com/login](https://rifyt.com/login).
 * **rapidez Verificação de Conclusão**:
