@@ -1,5 +1,4 @@
 <div align="center">
- <img src="https://github.com/user-attachments/assets/3f3fff96-1929-4ea6-907c-2304743a839f" alt="Logo Daily Reminder" width="140">
   <h1>Daily Reminder</h1>
   
   <p>
@@ -30,13 +29,18 @@ O **Daily Reminder** é uma aplicação nativa e leve, desenvolvida para garanti
 ##  Funcionalidades Principais
 
 * **UI Cyberpunk/Neon**: Interface moderna em modo escuro com detalhes em azul neon, projetada para não cansar a vista.
+  
 * **Agendamento Preciso**: Defina seu horário de daily e o aplicativo cuidará do resto, rodando em segundo plano.
+  
 * **Auto-Start Integrado**: Opção nativa para iniciar junto com o sistema operacional.
+  
 * **Modo Tray (Bandeja)**: O app fica minimizado discretamente na barra superior (perto do relógio/WiFi).
+  
 * **Fluxo Automatizado**:
     1.  O alerta dispara no horário configurado.
     2.  Ao clicar em **"Registrar Daily"**, o navegador abre automaticamente em [rifyt.com/login](https://rifyt.com/login).
-* **rapidez Verificação de Conclusão**:
+       
+* **Rapidez Verificação de Conclusão**:
     * Após o redirecionamento, o app exibe um pop-up de confirmação.
     * ✅ **SIM**: O app volta a dormir até o próximo dia.
     * ❌ **NÃO**: O app reabre a página de registros imediatamente para garantir a tarefa.
@@ -63,13 +67,17 @@ sudo apt install ./DailyReminder_*.deb
 
 # 🛠️ Stack Tecnológico
 Projeto construído com tecnologias robustas para garantir compatibilidade e performance:
-Tecnologia         Função
-Python 3.10+       Linguagem Core
-PyQt6Interface     Gráfica (GUI) moderna
-SQLite             Banco de dados local
-PyInstaller        Compilação de Binários
-GitHub Actions     CI/CD para geração automática de pacotes .deb
 
+| Tecnologia | Função |
+| :--- | :--- |
+| **Python 3.10+** | Linguagem Core |
+| **PyQt6** | Interface Gráfica (GUI) moderna |
+| **SQLite** | Banco de dados local |
+| **PyInstaller** | Compilação de Binários |
+| **GitHub Actions** | CI/CD para geração automática de pacotes .deb |
 
+---
+
+<br>
 
 <p align="center"> Desenvolvido por Luan Neuwirth para <b>Ztrax</b>. </p>
