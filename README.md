@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logo.png" alt="Logo Daily Reminder" width="140">
+  <img src="https://raw.githubusercontent.com/LuanNeuwirthC/DailyReminder_Linux/main/logo.png" alt="Logo Daily Reminder" width="140">
 
   <h1>Daily Reminder</h1>
   
