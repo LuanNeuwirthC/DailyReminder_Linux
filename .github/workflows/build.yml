@@ -1,4 +1,4 @@
-name: Build Linux Universal
+name: Build Linux .deb Package (Auto-Install Dependencies)
 
 on:
   push:
@@ -21,17 +21,60 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libxcb-cursor0 libxcb-xinerama0
-        python -m pip install --upgrade pip
         pip install PyQt6 pyinstaller
 
-    - name: Build with PyInstaller
+    - name: Build Binary
       run: |
         pyinstaller --noconsole --onefile --name DailyReminder --icon=logo.png main.py
 
-    - name: Upload Artifact
+    - name: Create .deb Structure
+      run: |
+        mkdir -p package/DEBIAN
+        mkdir -p package/opt/DailyReminder
+        mkdir -p package/usr/share/applications
+        mkdir -p package/usr/share/pixmaps
+
+        cp dist/DailyReminder package/opt/DailyReminder/
+        cp logo.png package/opt/DailyReminder/
+        cp logo.png package/usr/share/pixmaps/dailyreminder.png
+
+        echo "Package: dailyreminder" > package/DEBIAN/control
+        echo "Version: 1.0.6" >> package/DEBIAN/control
+        echo "Section: utils" >> package/DEBIAN/control
+        echo "Priority: optional" >> package/DEBIAN/control
+        echo "Architecture: amd64" >> package/DEBIAN/control
+        echo "Depends: libxcb-cursor0, libxcb-xinerama0, libxcb-shape0, libxcb-xfixesc0, libxkbcommon-x11-0, libglib2.0-0" >> package/DEBIAN/control
+        echo "Maintainer: Luan Neuwirth <luan@example.com>" >> package/DEBIAN/control
+        echo "Description: Lembrete Diário Completo" >> package/DEBIAN/control
+        echo " Instala automaticamente dependencias Qt6 e configura permissoes." >> package/DEBIAN/control
+
+        echo "#!/bin/sh" > package/DEBIAN/postinst
+        echo "set -e" >> package/DEBIAN/postinst
+        echo "chmod 755 /opt/DailyReminder/DailyReminder" >> package/DEBIAN/postinst
+        echo "chmod 644 /opt/DailyReminder/logo.png" >> package/DEBIAN/postinst
+        echo "update-desktop-database /usr/share/applications" >> package/DEBIAN/postinst
+        echo "exit 0" >> package/DEBIAN/postinst
+        
+        chmod 755 package/DEBIAN/postinst
+
+        echo "[Desktop Entry]" > package/usr/share/applications/dailyreminder.desktop
+        echo "Version=1.0" >> package/usr/share/applications/dailyreminder.desktop
+        echo "Type=Application" >> package/usr/share/applications/dailyreminder.desktop
+        echo "Name=Daily Reminder" >> package/usr/share/applications/dailyreminder.desktop
+        echo "Exec=/opt/DailyReminder/DailyReminder" >> package/usr/share/applications/dailyreminder.desktop
+        echo "Icon=dailyreminder" >> package/usr/share/applications/dailyreminder.desktop
+        echo "Terminal=false" >> package/usr/share/applications/dailyreminder.desktop
+        echo "Categories=Utility;" >> package/usr/share/applications/dailyreminder.desktop
+
+        chmod 755 package/DEBIAN
+        chmod 755 package/DEBIAN/control
+        chmod 755 package/opt/DailyReminder/DailyReminder
+
+    - name: Build .deb File
+      run: dpkg-deb --build package DailyReminder_1.0.6_amd64.deb
+
+    - name: Upload .deb
       uses: actions/upload-artifact@v4
       with:
-        name: DailyReminder_Linux_Universal
-        path: |
-          dist/DailyReminder
-          logo.png
+        name: dailyreminder_installer_full
+        path: DailyReminder_1.0.6_amd64.deb
