@@ -8,7 +8,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/LuanNeuwirthC/DailyReminder_Linux/releases/tag/latest">
+    <a href="https://github.com/LuanNeuwirthC/DailyReminder_Linux/releases/tag/v1.0.7">
       <img src="https://img.shields.io/badge/Download-Latest_Release-00D2FF?style=for-the-badge&logo=linux&logoColor=black" alt="Download">
     </a>
   </p>
