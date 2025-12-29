@@ -65,7 +65,7 @@ sudo apt install ./DailyReminder_*.deb
 ```
 > Nota: Após a instalação, procure por "Daily Reminder" no menu de aplicativos do seu sistema.
 
-# 🛠️ Stack Tecnológico
+## 🛠️ Stack Tecnológico
 Projeto construído com tecnologias robustas para garantir compatibilidade e performance:
 
 | Tecnologia | Função |
