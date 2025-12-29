@@ -1,5 +1,5 @@
 <div align="center">
- <img src="https://github.com/user-attachments/assets/3f3fff96-1929-4ea6-907c-2304743a839f" alt="Logo Daily Reminder" width="140">
+ <img src="https://github.com/user-attachments/assets/5d22d5a4-a0fe-4098-812e-629ab84caab9">
 
   <h1>Daily Reminder</h1>
   
