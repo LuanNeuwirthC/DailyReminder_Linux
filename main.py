@@ -62,8 +62,8 @@ class ThemeColors:
         "green": {"name": "Verde", "color": "#00E070"},
         "purple": {"name": "Roxo", "color": "#BD00FF"},
         "pink": {"name": "Rosa", "color": "#FF007F"},
-        "red": {"name": "Vermelho", "color": "#FF4444"},
-        "orange": {"name": "Laranja", "color": "#FF8800"},
+        "red": {"name": "Vermelho", "color": "#FF0000"},
+        "orange": {"name": "Laranja", "color": "#FF5C00"},
     }
 
     @staticmethod
@@ -294,7 +294,7 @@ class DaemonApp(DraggableWindow):
         self.chk_auto = QCheckBox("Iniciar com o Sistema")
         self.chk_auto.setCursor(Qt.CursorShape.PointingHandCursor)
         
-        self.btn_save = QPushButton("Salvar e Ocultar")
+        self.btn_save = QPushButton("Salvar e Ativar")
         self.btn_save.setObjectName("SaveButton")
         self.btn_save.setFixedHeight(40)
         self.btn_save.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -393,11 +393,24 @@ class DaemonApp(DraggableWindow):
                 self.db_manager.save(self.config)
 
     def hide_and_save(self):
-        new_time = self.time_input.time().toString("HH:mm")
-        if new_time != self.config.target_time:
-            self.config.last_run_date = ""
+        new_time_str = self.time_input.time().toString("HH:mm")
         
-        self.config.target_time = new_time
+        # Lógica de correção para evitar disparos falsos na edição:
+        if new_time_str != self.config.target_time:
+            current_time = QTime.currentTime()
+            new_target_time = QTime.fromString(new_time_str, "HH:mm")
+            
+            # Se o usuário escolheu um horário que JÁ PASSOU hoje (ex: agora são 15:00, escolheu 14:00)
+            if new_target_time <= current_time:
+                # Marcamos como 'já rodou hoje' para NÃO disparar imediatamente.
+                # O usuário claramente está configurando para amanhã.
+                self.config.last_run_date = QDate.currentDate().toString("yyyy-MM-dd")
+            else:
+                # Se o horário é FUTURO (ex: agora são 09:00, escolheu 14:00)
+                # Limpamos a data para garantir que dispare hoje.
+                self.config.last_run_date = ""
+        
+        self.config.target_time = new_time_str
         self.config.autostart_enabled = self.chk_auto.isChecked()
         self.db_manager.save(self.config)
         self.autostart_manager.set_autostart(self.config.autostart_enabled)
@@ -476,14 +489,12 @@ class NotificationWindow(DraggableWindow):
         self.anim.setEasingCurve(QEasingCurve.Type.OutQuad)
         self.anim.start()
 
-        # Lista de sons padrão do Linux (Pop_OS/Ubuntu/Gnome)
         sound_files = [
             "/usr/share/sounds/freedesktop/stereo/message.oga",
             "/usr/share/sounds/Yaru/stereo/message.oga",
             "/usr/share/sounds/gnome/default/alerts/glass.ogg"
         ]
         
-        # Tenta tocar usando o player do sistema (paplay ou aplay)
         for s in sound_files:
             if os.path.exists(s):
                 try:
@@ -561,7 +572,7 @@ class ConfirmationWindow(DraggableWindow):
         self.close()
 
 if __name__ == "__main__":
-    lock_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.TempLocation) + "/daily_reminder_v20.lock"
+    lock_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.TempLocation) + "/daily_reminder_v21.lock"
     lock = QLockFile(lock_path)
     lock.setStaleLockTime(3000)
     if not lock.tryLock(): sys.exit(0)
