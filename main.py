@@ -4,21 +4,26 @@ import platform
 import sqlite3
 import webbrowser
 import subprocess
+import json
+import urllib.request
 from pathlib import Path
 from dataclasses import dataclass
 
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QTimeEdit, QCheckBox, QPushButton, QFrame, QMainWindow,
-    QSystemTrayIcon, QMenu, QAbstractSpinBox
+    QSystemTrayIcon, QMenu, QAbstractSpinBox, QMessageBox
 )
 from PyQt6.QtCore import (
     Qt, QTimer, QPoint, QTime, QDate, QLockFile, QStandardPaths, 
-    QUrl, QPropertyAnimation, QEasingCurve
+    QUrl, QPropertyAnimation, QEasingCurve, QThread, pyqtSignal
 )
 from PyQt6.QtGui import (
     QPainter, QBrush, QColor, QPen, QAction, QPixmap, QIcon, QActionGroup
 )
+
+APP_VERSION = "1.0.8"
+GITHUB_REPO = "LuanNeuwirthC/DailyReminder_Linux" 
 
 @dataclass
 class AppConfig:
@@ -69,6 +74,30 @@ class ThemeColors:
     @staticmethod
     def get_color(mode, accent_key):
         return ThemeColors.ACCENTS.get(accent_key, ThemeColors.ACCENTS["blue"])["color"]
+
+class UpdateWorker(QThread):
+    update_available = pyqtSignal(str, str) 
+
+    def run(self):
+        try:
+            url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+            with urllib.request.urlopen(url) as response:
+                data = json.loads(response.read().decode())
+                latest_tag = data.get("tag_name", "").replace("v", "")
+                html_url = data.get("html_url", "")
+                
+                if self.is_newer(latest_tag, APP_VERSION):
+                    self.update_available.emit(latest_tag, html_url)
+        except:
+            pass
+
+    def is_newer(self, latest, current):
+        try:
+            l_parts = [int(x) for x in latest.split('.')]
+            c_parts = [int(x) for x in current.split('.')]
+            return l_parts > c_parts
+        except:
+            return False
 
 class DatabaseManager:
     def __init__(self):
@@ -191,6 +220,24 @@ class DaemonApp(DraggableWindow):
         self.setup_tray()
         self.apply_theme()
         self.apply_config_to_ui()
+        
+        self.update_worker = UpdateWorker()
+        self.update_worker.update_available.connect(self.show_update_dialog)
+        self.update_worker.start()
+
+    def show_update_dialog(self, version, url):
+        msg = QMessageBox()
+        msg.setWindowTitle("Atualização Disponível")
+        msg.setText(f"Uma nova versão ({version}) está disponível!")
+        msg.setInformativeText("Deseja baixar e instalar agora?")
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setDefaultButton(QMessageBox.StandardButton.Yes)
+        
+        # Estilo escuro básico para o dialog não ficar branco demais
+        msg.setStyleSheet("QMessageBox { background-color: #1a1a1a; color: white; } QLabel { color: white; } QPushButton { background-color: #333; color: white; padding: 5px; }")
+        
+        if msg.exec() == QMessageBox.StandardButton.Yes:
+            webbrowser.open(url)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -253,7 +300,7 @@ class DaemonApp(DraggableWindow):
         main_layout.setSpacing(10)
 
         header = QHBoxLayout()
-        self.title_lbl = QLabel("DAILY REMINDER")
+        self.title_lbl = QLabel(f"DAILY REMINDER v{APP_VERSION}")
         self.title_lbl.setObjectName("HeaderTitle")
         
         self.btn_theme = QPushButton()
@@ -395,19 +442,13 @@ class DaemonApp(DraggableWindow):
     def hide_and_save(self):
         new_time_str = self.time_input.time().toString("HH:mm")
         
-        # Lógica de correção para evitar disparos falsos na edição:
         if new_time_str != self.config.target_time:
             current_time = QTime.currentTime()
             new_target_time = QTime.fromString(new_time_str, "HH:mm")
             
-            # Se o usuário escolheu um horário que JÁ PASSOU hoje (ex: agora são 15:00, escolheu 14:00)
             if new_target_time <= current_time:
-                # Marcamos como 'já rodou hoje' para NÃO disparar imediatamente.
-                # O usuário claramente está configurando para amanhã.
                 self.config.last_run_date = QDate.currentDate().toString("yyyy-MM-dd")
             else:
-                # Se o horário é FUTURO (ex: agora são 09:00, escolheu 14:00)
-                # Limpamos a data para garantir que dispare hoje.
                 self.config.last_run_date = ""
         
         self.config.target_time = new_time_str
@@ -572,7 +613,7 @@ class ConfirmationWindow(DraggableWindow):
         self.close()
 
 if __name__ == "__main__":
-    lock_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.TempLocation) + "/daily_reminder_v21.lock"
+    lock_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.TempLocation) + "/daily_reminder_v22.lock"
     lock = QLockFile(lock_path)
     lock.setStaleLockTime(3000)
     if not lock.tryLock(): sys.exit(0)
