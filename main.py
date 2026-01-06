@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QTimeEdit, QCheckBox, QPushButton, QFrame, QMainWindow,
-    QSystemTrayIcon, QMenu, QAbstractSpinBox, QMessageBox
+    QSystemTrayIcon, QMenu, QAbstractSpinBox, QMessageBox, QColorDialog
 )
 from PyQt6.QtCore import (
     Qt, QTimer, QPoint, QTime, QDate, QLockFile, QStandardPaths, 
@@ -22,8 +22,8 @@ from PyQt6.QtGui import (
     QPainter, QBrush, QColor, QPen, QAction, QPixmap, QIcon, QActionGroup
 )
 
-APP_VERSION = "1.0.8"
-GITHUB_REPO = "LuanNeuwirthC/DailyReminder_Linux" 
+APP_VERSION = "1.0.9"
+GITHUB_REPO = "luanneuwirth/dailyreminder_linux" 
 
 @dataclass
 class AppConfig:
@@ -67,13 +67,17 @@ class ThemeColors:
         "green": {"name": "Verde", "color": "#00E070"},
         "purple": {"name": "Roxo", "color": "#BD00FF"},
         "pink": {"name": "Rosa", "color": "#FF007F"},
-        "red": {"name": "Vermelho", "color": "#FF0000"},
-        "orange": {"name": "Laranja", "color": "#FF5C00"},
+        "red": {"name": "Vermelho", "color": "#FF4444"},
+        "orange": {"name": "Laranja", "color": "#FF8800"},
     }
 
     @staticmethod
-    def get_color(mode, accent_key):
-        return ThemeColors.ACCENTS.get(accent_key, ThemeColors.ACCENTS["blue"])["color"]
+    def get_color(accent_key):
+        # Se for uma das chaves padrão, retorna a cor dela
+        if accent_key in ThemeColors.ACCENTS:
+            return ThemeColors.ACCENTS[accent_key]["color"]
+        # Se não, assume que é um código Hex customizado
+        return accent_key
 
 class UpdateWorker(QThread):
     update_available = pyqtSignal(str, str) 
@@ -86,7 +90,7 @@ class UpdateWorker(QThread):
                 latest_tag = data.get("tag_name", "").replace("v", "")
                 html_url = data.get("html_url", "")
                 
-                if self.is_newer(latest_tag, APP_VERSION):
+                if self.is_newer(latest_tag):
                     self.update_available.emit(latest_tag, html_url)
         except:
             pass
@@ -233,7 +237,6 @@ class DaemonApp(DraggableWindow):
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setDefaultButton(QMessageBox.StandardButton.Yes)
         
-        # Estilo escuro básico para o dialog não ficar branco demais
         msg.setStyleSheet("QMessageBox { background-color: #1a1a1a; color: white; } QLabel { color: white; } QPushButton { background-color: #333; color: white; padding: 5px; }")
         
         if msg.exec() == QMessageBox.StandardButton.Yes:
@@ -245,7 +248,7 @@ class DaemonApp(DraggableWindow):
         
         mode = self.get_current_mode()
         bg_color = ThemeColors.PALETTES[mode]["bg"]
-        accent = ThemeColors.get_color(mode, self.config.accent_color)
+        accent = ThemeColors.get_color(self.config.accent_color)
         
         painter.setBrush(QBrush(bg_color))
         painter.setPen(QPen(QColor(accent)))
@@ -269,7 +272,7 @@ class DaemonApp(DraggableWindow):
         self.tray_icon.show()
 
     def update_tray_icon(self):
-        accent = ThemeColors.get_color(self.get_current_mode(), self.config.accent_color)
+        accent = ThemeColors.get_color(self.config.accent_color)
         pixmap = QPixmap(32, 32)
         pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)
@@ -300,7 +303,7 @@ class DaemonApp(DraggableWindow):
         main_layout.setSpacing(10)
 
         header = QHBoxLayout()
-        self.title_lbl = QLabel(f"DAILY REMINDER v{APP_VERSION}")
+        self.title_lbl = QLabel(f"DAILY REMINDER ")
         self.title_lbl.setObjectName("HeaderTitle")
         
         self.btn_theme = QPushButton()
@@ -377,8 +380,19 @@ class DaemonApp(DraggableWindow):
             act.triggered.connect(lambda _, c=key: self.set_accent_color(c))
             g2.addAction(act)
             color_menu.addAction(act)
+        
+        # Mantive o seletor manual, pois você tinha gostado
+        menu.addSeparator()
+        custom_act = QAction("Outra Cor...", self)
+        custom_act.triggered.connect(self.pick_custom_color)
+        color_menu.addAction(custom_act)
 
         menu.exec(self.btn_theme.mapToGlobal(QPoint(0, 30)))
+
+    def pick_custom_color(self):
+        c = QColorDialog.getColor(QColor(ThemeColors.get_color(self.config.accent_color)), self, "Escolha uma Cor")
+        if c.isValid():
+            self.set_accent_color(c.name())
 
     def set_theme_mode(self, mode):
         self.config.theme_mode = mode
@@ -391,7 +405,7 @@ class DaemonApp(DraggableWindow):
     def apply_theme(self):
         mode = self.get_current_mode()
         p = ThemeColors.PALETTES[mode]
-        accent = ThemeColors.get_color(mode, self.config.accent_color)
+        accent = ThemeColors.get_color(self.config.accent_color)
         
         ss = f"""
         QWidget {{ color: {p['text']}; font-family: 'Segoe UI', sans-serif; }}
@@ -442,10 +456,12 @@ class DaemonApp(DraggableWindow):
     def hide_and_save(self):
         new_time_str = self.time_input.time().toString("HH:mm")
         
+        # LÓGICA DE CORREÇÃO DO BUG MANTIDA AQUI:
         if new_time_str != self.config.target_time:
             current_time = QTime.currentTime()
             new_target_time = QTime.fromString(new_time_str, "HH:mm")
             
+            # Se escolher horário que já passou, joga pra amanhã
             if new_target_time <= current_time:
                 self.config.last_run_date = QDate.currentDate().toString("yyyy-MM-dd")
             else:
@@ -494,7 +510,7 @@ class NotificationWindow(DraggableWindow):
         if mode not in ThemeColors.PALETTES: mode = "dark"
         
         self.p = ThemeColors.PALETTES[mode]
-        self.accent = ThemeColors.get_color(mode, accent_key)
+        self.accent = ThemeColors.get_color(accent_key)
         self.bg_color = self.p['bg']
         
         central = QWidget()
@@ -568,7 +584,7 @@ class ConfirmationWindow(DraggableWindow):
         
         if mode not in ThemeColors.PALETTES: mode = "dark"
         p = ThemeColors.PALETTES[mode]
-        accent = ThemeColors.get_color(mode, accent_key)
+        accent = ThemeColors.get_color(accent_key)
         bg_color = p['bg']
 
         central = QWidget()
@@ -613,7 +629,7 @@ class ConfirmationWindow(DraggableWindow):
         self.close()
 
 if __name__ == "__main__":
-    lock_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.TempLocation) + "/daily_reminder_v22.lock"
+    lock_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.TempLocation) + "/daily_reminder_v26.lock"
     lock = QLockFile(lock_path)
     lock.setStaleLockTime(3000)
     if not lock.tryLock(): sys.exit(0)
